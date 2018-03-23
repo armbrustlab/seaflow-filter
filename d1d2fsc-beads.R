@@ -3,7 +3,7 @@ library(aws.s3)
 library(googlesheets)
 
 
-
+#path to Git repo
 setwd("~/Documents/DATA/Codes/seaflow-filter")
 
 
@@ -14,20 +14,25 @@ setwd("~/Documents/DATA/Codes/seaflow-filter")
 
 dat://2b03e08a5cc4b4cc430d5a355115c6a1597ca6d6ccfc9778f1fb5b545a600deb
 
+#Path to the raw data (DAT)
+path.to.data <- "~/Documents/DATA/Codes/seaflow-filter/seaflow-filter-data/"
+
 
 ####################################
 ### CREATE concatenated EVT file ###
 ####################################
+
+
 
 x <- gs_title("SeaFlow\ instrument\ log", verbose = TRUE)
 list <- gs_read(x)
 cruise.list <- list$cruise
 
 
-for(cruise in cruise.list){
+for(cruise in cruise.list[48:length(cruise.list)]){
   print(cruise)
-  evt.list <- list.files(path=paste0("evt/",cruise), pattern=".gz", recursive=T, full.names=T)
-  DF <- concatenate.evtopp(evt.list, n=100000, min.fsc = 2, min.pe =5, min.chl=0, transform=T)
+  evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursive=T, full.names=T)
+  DF <- concatenate.evtopp(evt.list, n=100000, min.fsc = 2, min.pe =5, min.chl=0, transform=F)
   write.csv(DF, paste0(cruise,"/concatenated_EVT.csv"), quote=F, row.names=F)
 
 }
@@ -47,7 +52,7 @@ for(cruise in cruise.list){
 #########################################################
 ### GET D1, D2 and FSC coordinate of inflection point ###
 #########################################################
-cruise <- cruise.list[49]
+cruise <- cruise.list[52]
   print(cruise)
   DF <- read.csv(paste0(cruise,"/concatenated_EVT.csv"))
 
@@ -73,6 +78,7 @@ for(file in csv.list){
   }
 
 write.csv(DF,"ALL-filterparams.csv", quote=F, row.names=F)
+
 
 png("ALL-filterparams.png",width=20, height=30, unit='in', res=100)
 
