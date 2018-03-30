@@ -4,4 +4,4 @@ Coordinates (D1, D2 and fsc_small) of 1 micron beads  for each cruise. These coo
 
 ![alt text](ALL-filterparams.png "Coordinates (D1, D2 and fsc_small) of 1 micron beads for each cruise")
 
-*** François Ribalet and Chris Berthiaume contributed to this project ***
+### François Ribalet and Chris Berthiaume contributed to this project ###
