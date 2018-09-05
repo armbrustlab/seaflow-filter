@@ -21,18 +21,16 @@ path.to.data <- "~/Documents/DATA/Codes/seaflow-filter/seaflow-filter-data/"
 ####################################
 ### CREATE concatenated EVT file ###
 ####################################
-
-
-
 x <- gs_title("SeaFlow\ instrument\ log", verbose = TRUE)
 list <- gs_read(x)
 cruise.list <- list$cruise
 
 
-for(cruise in cruise.list[48:length(cruise.list)]){
+for(cruise in cruise.list){
+  cruise <- cruise.list[34]
   print(cruise)
   evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursive=T, full.names=T)
-  DF <- concatenate.evtopp(evt.list, n=100000, min.fsc = 2, min.pe =5, min.chl=0, transform=F)
+  DF <- concatenate.evtopp(evt.list, n=100000, min.fsc = 2, min.pe =25000, min.chl=0, transform=F)
   write.csv(DF, paste0(cruise,"/concatenated_EVT.csv"), quote=F, row.names=F)
 
 }
@@ -79,15 +77,24 @@ for(file in csv.list){
 
 write.csv(DF,"ALL-filterparams.csv", quote=F, row.names=F)
 
-
 png("ALL-filterparams.png",width=20, height=30, unit='in', res=100)
 
 layout(matrix(c(1,2,3,3), 2, 2, byrow = TRUE))
 par(pty='m', oma=c(0,5,0,0),cex=1.4)
 barplot(DF$fsc, names.arg=DF$cruise, horiz=T, las=1, main="fsc")
-barplot(DF$d1, names.arg=DF$cruise, horiz=T, las=1, main="D1 & D2")
-barplot(DF$d2, horiz=T, las=1, col='lightgreen',density=50, add=T)
-#plot(DF$cruise, 0.5*c(DF$d2+DF$d1)/DF$fsc, ylab="D/FSC")
+barplot(DF$d2, names.arg=DF$cruise, horiz=T, las=1, main="D1 & D2")
+barplot(DF$d1, horiz=T, las=1, col='lightgreen',density=50, add=T)
 barplot(0.5*c(DF$d2+DF$d1)/DF$fsc, names.arg=DF$cruise, horiz=T, las=1, col='lightblue',density=50, main="D/FSC")
 
 dev.off()
+
+
+
+############################
+### CHECK OPP FILTRATION ###
+############################
+evt <- readSeaflow(evt.list[40],transform=F)
+inst <- unlist(list(list[which(list$cruise == cruise),'instrument']))
+
+params <- create.filter.params(inst, fsc=ip$fsc, d1=ip$d1, d2=ip$d2)[2,]
+plot.filter.cytogram(evt, params)
