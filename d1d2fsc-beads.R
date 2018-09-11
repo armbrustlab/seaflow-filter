@@ -1,6 +1,85 @@
 library(popcycle)
-library(aws.s3)
 library(googlesheets)
+
+x <- getURL("https://raw.github.com/aronlindberg/latent_growth_classes/master/LGC_data.csv")
+y <- read.csv(text = x)
+
+
+
+create.filter.params <- function(inst, fsc, d1, d2, slope.file=NULL) {
+  # Rename to get correct dataframe headers
+  beads.fsc.small <- as.numeric(fsc)
+  beads.D1 <- as.numeric(d1)
+  beads.D2 <- as.numeric(d2)
+
+  width <- 2500
+
+  if (is.null(slope.file)) {
+    slope.file <- system.file("filter", "seaflow_filter_slopes.csv",package='popcycle')
+  }
+  slopes <- read.csv(slope.file)
+
+  filter.params <- data.frame()
+  headers <- c("quantile", "beads.fsc.small",
+               "beads.D1", "beads.D2", "width",
+               "notch.small.D1", "notch.small.D2",
+               "notch.large.D1", "notch.large.D2",
+               "offset.small.D1", "offset.small.D2",
+               "offset.large.D1", "offset.large.D2")
+
+  for (quantile in QUANTILES) {
+    if (quantile == 2.5) {
+      suffix <- "_2.5"
+    } else if (quantile == 97.5) {
+      suffix <- "_97.5"
+    } else if (quantile == 50.0) {
+      suffix <- ""
+    }
+
+    # Small particles
+    notch.small.D1 <- beads.D1/beads.fsc.small  * slopes[slopes$ins== inst, paste0('notch.small.D1', suffix)] / slopes[slopes$ins== inst, 'notch.small.D1']
+    notch.small.D2 <- beads.D2/beads.fsc.small  * slopes[slopes$ins== inst, paste0('notch.small.D2', suffix)] / slopes[slopes$ins== inst, 'notch.small.D2']
+    offset.small.D1 <- 0
+    offset.small.D2 <- 0
+
+    # Large particles
+    notch.large.D1 <- slopes[slopes$ins== inst, paste0('notch.large.D1', suffix)]
+    notch.large.D2 <- slopes[slopes$ins== inst, paste0('notch.large.D2', suffix)]
+    offset.large.D1 <- round(beads.D1 - notch.large.D1 * beads.fsc.small)
+    offset.large.D2 <- round(beads.D2 - notch.large.D2 * beads.fsc.small)
+
+      newrow <- data.frame(quantile, beads.fsc.small,
+                         beads.D1, beads.D2, width,
+                         notch.small.D1, notch.small.D2,
+                         notch.large.D1, notch.large.D2,
+                         offset.small.D1, offset.small.D2,
+                         offset.large.D1, offset.large.D2,
+                         stringsAsFactors=FALSE)
+    names(newrow) <- headers
+    filter.params <- rbind(filter.params, newrow)
+  }
+
+  return(filter.params)
+}
+
+offset <- function(inst, fsc, d1, d2){
+      fsc <- as.numeric(fsc)
+      d1<- as.numeric(d1)
+      d2 <- as.numeric(d2)
+      slopes <- read.csv(system.file("filter", "seaflow_filter_slopes.csv",package='popcycle'))
+      slopes[slopes$ins== inst, 'notch.small.D1']
+      notch.small.D1 <- slopes[slopes$ins== inst, 'notch.small.D1']
+      notch.small.D2 <- slopes[slopes$ins== inst, 'notch.small.D2']
+      offset.small.D1 <- round(d1 - notch.small.D1 * fsc)
+      offset.small.D2 <- round(d2 - notch.small.D2 * fsc)
+      notch.large.D1 <- slopes[slopes$ins== inst, 'notch.large.D1']
+      notch.large.D2 <- slopes[slopes$ins== inst, 'notch.large.D2']
+      offset.large.D1 <- round(d1 - notch.large.D1 * fsc)
+      offset.large.D2 <- round(d2 - notch.large.D2 * fsc)
+
+      return(c(offset.small.D1,offset.small.D2,offset.large.D1,offset.large.D2, notch.small.D1,notch.small.D2, notch.large.D1, notch.large.D2))
+      }
+
 
 
 #path to Git repo
@@ -46,18 +125,17 @@ write.csv(DF, paste0(cruise,"/concatenated_EVT.csv"), quote=F, row.names=F)
 
 
 
-#########################################################
-### GET D1, D2 and FSC coordinate of inflection point ###
-#########################################################
-
+################################################################################
+### GET D1, D2 and FSC coordinate of inflection point (where 1 µm beads are) ###
+################################################################################
 QUANTILES <- c(2.5, 50.0, 97.5) # NEED TO FIX THIS BUG...
 
 cruise <- cruise.list[52]
   print(cruise)
-  DF <- read.csv(paste0(cruise,"/concatenated_EVT.csv"))
+  EVT <- read.csv(paste0(cruise,"/concatenated_EVT.csv"))
 
   # Gates beads to find intersections of the two slopes used for OPP filtration
-  ip <- inflection.point(DF)
+  ip <- inflection.point(EVT)
 
   # check OPP filtration
   inst <- unlist(list(list[which(list$cruise == cruise),'instrument']))
@@ -67,12 +145,16 @@ cruise <- cruise.list[52]
 
 
   # only if satisfied with params
-  write.csv(data.frame(cruise, ip), paste0(cruise,"/d1d2fsc-filterparams.csv"),quote=F, row.names=F)
+  write.csv(data.frame(cruise, ip), paste0(cruise,"/d1d2fsc.csv"),quote=F, row.names=F)
+
+
+
+
 
 ######################################################################
 ### CONCATENATE d1d2fsc-filterparams.csv from ALL cruises TOGETHER ###
 ######################################################################
-csv.list <- list.files(path=".", pattern="d1d2fsc-filterparams.csv", recursive=T, full.names=T)
+csv.list <- list.files(path=".", pattern="d1d2fsc.csv", recursive=T, full.names=T)
 
 DF <- NULL
 for(file in csv.list){
@@ -81,55 +163,51 @@ for(file in csv.list){
    DF <- rbind(DF,df)
   }
 
-write.csv(DF,"ALL-filterparams.csv", quote=F, row.names=F)
-
-layout(matrix(c(1,2,3,3), 2, 2, byrow = TRUE))
-par(pty='m', oma=c(0,5,0,0),cex=1.4)
-barplot(DF$fsc, names.arg=DF$cruise, horiz=T, las=1, main="fsc")
-barplot(DF$d2, names.arg=DF$cruise, horiz=T, las=1, main="D1 & D2")
-barplot(DF$d1, horiz=T, las=1, col='lightgreen',density=50, add=T)
-barplot(0.5*c(DF$d2+DF$d1)/DF$fsc, names.arg=DF$cruise, horiz=T, las=1, col='lightblue',density=50, main="D/FSC")
+write.csv(DF,"ALL-d1d2fsc.csv", quote=F, row.names=F)
 
 
 
+####################################
+### CREATE FILTRATION PARAMETERS ###
+####################################
 
-
-
-
-########################################
-### CHECK OFFSET for small particles ###
-########################################
-cols <- colorRampPalette(c("blue4","royalblue4","deepskyblue3", "seagreen3", "yellow", "orangered2","darkred"))
-
-offset <- function(inst, fsc, d1, d2){
-      fsc <- as.numeric(fsc)
-      d1<- as.numeric(d1)
-      d2 <- as.numeric(d2)
-      slopes <- read.csv(system.file("filter", "seaflow_filter_slopes.csv",package='popcycle'))
-      slopes[slopes$ins== inst, 'notch.small.D1']
-      notch.small.D1 <- slopes[slopes$ins== inst, 'notch.small.D1']
-      notch.small.D2 <- slopes[slopes$ins== inst, 'notch.small.D2']
-      offset.small.D1 <- round(d1 - notch.small.D1 * fsc)
-      offset.small.D2 <- round(d2 - notch.small.D2 * fsc)
-      notch.large.D1 <- slopes[slopes$ins== inst, 'notch.large.D1']
-      notch.large.D2 <- slopes[slopes$ins== inst, 'notch.large.D2']
-      offset.large.D1 <- round(d1 - notch.large.D1 * fsc)
-      offset.large.D2 <- round(d2 - notch.large.D2 * fsc)
-
-      return(c(offset.small.D1,offset.small.D2,offset.large.D1,offset.large.D2, notch.small.D1,notch.small.D2, notch.large.D1, notch.large.D2))
-      }
+### DOWLOAD FILTER SLOPES
+slope.file <- "https://raw.githubusercontent.com/armbrustlab/seaflow-virtualcore/master/1.bead_calibration/seaflow_filter_slopes.csv"
 
 x <- gs_title("SeaFlow\ instrument\ log", verbose = TRUE)
 list <- gs_read(x)
-DF <- read.csv("ALL-filterparams.csv")
+DF <- read.csv("ALL-d1d2fsc.csv")
 DF <- merge(DF, list[,c("cruise","instrument","year")])
+
+params <- NULL
+for(i in 1:nrow(DF)){
+    df <- create.filter.params(inst=DF[i,"instrument"], fsc=DF[i,"fsc"], d1=DF[i,"d1"], d2=DF[i,"d2"], slope.file=slope.file)
+    df$cruise <- DF[i,'cruise']
+    params <- rbind(params, df)
+  }
+
+
+write.csv(params,"ALL-filterparams.csv", quote=F, row.names=F)
+
+
+
+
+
+
+
+
+##############################
+### PLOT BEADS COORDINATES ###
+##############################
+library(scales)
+cols <- colorRampPalette(c("blue4","royalblue4","deepskyblue3", "seagreen3", "yellow", "orangered2","darkred"))
 DF <- DF[order(DF$year),]
 
 df <- as.data.frame(t(apply(DF,1, function(DF) offset(inst=DF["instrument"], fsc=DF["fsc"], d1=DF["d1"], d2=DF["d2"]))))
 colnames(df) <- c("offset.small.D1","offset.small.D2","offset.large.D1","offset.large.D2", "notch.small.D1","notch.small.D2", "notch.large.D1", "notch.large.D2")
 df$cruise <- as.vector(DF$cruise)
 
-png("ALL-filterparams.png",width=12, height=12, unit='in', res=400)
+png("ALL-d1d2fsc.png",width=12, height=12, unit='in', res=400)
 
 plot(c(0,2^16), c(0,2^16), pch=NA, xlab="fsc_small", ylab="D1 & D2",las=1, main='Bead coordinates')
   for(i in 1:nrow(df)){
@@ -140,3 +218,6 @@ plot(c(0,2^16), c(0,2^16), pch=NA, xlab="fsc_small", ylab="D1 & D2",las=1, main=
     legend('topleft',legend=DF$cruise,pch=21, pt.bg=alpha(cols(nrow(df)),0.5), bty='n', ncol=2)
 
 dev.off()
+
+id <- match(c("SCOPE_16","SCOPE_6","MBARI_1","DeepDOM"),DF$cruise)
+points(DF[id,"fsc"],DF[id,"d1"],pch=1,cex=3,col=2,lwd=2)
