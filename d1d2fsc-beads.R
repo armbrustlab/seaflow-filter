@@ -1,10 +1,6 @@
 library(popcycle)
 library(googlesheets)
 
-x <- getURL("https://raw.github.com/aronlindberg/latent_growth_classes/master/LGC_data.csv")
-y <- read.csv(text = x)
-
-
 
 create.filter.params <- function(inst, fsc, d1, d2, slope.file=NULL) {
   # Rename to get correct dataframe headers
@@ -128,7 +124,7 @@ write.csv(DF, paste0(cruise,"/concatenated_EVT.csv"), quote=F, row.names=F)
 ################################################################################
 ### GET D1, D2 and FSC coordinate of inflection point (where 1 µm beads are) ###
 ################################################################################
-QUANTILES <- c(2.5, 50.0, 97.5) # NEED TO FIX THIS BUG...
+QUANTILES <- c(2.5, 50.0, 97.5)
 
 cruise <- cruise.list[52]
   print(cruise)
@@ -179,17 +175,11 @@ list <- gs_read(x)
 DF <- read.csv("ALL-d1d2fsc.csv")
 DF <- merge(DF, list[,c("cruise","instrument","year")])
 
-params <- NULL
-for(i in 1:nrow(DF)){
-    df <- create.filter.params(inst=DF[i,"instrument"], fsc=DF[i,"fsc"], d1=DF[i,"d1"], d2=DF[i,"d2"], slope.file=slope.file)
-    df$cruise <- DF[i,'cruise']
-    params <- rbind(params, df)
-  }
-
+params <- t(apply(DF,1, function(DF) create.filter.params(inst=DF["instrument"], fsc=DF["fsc"], d1=DF["d1"], d2=DF["d2"], slope.file=slope.file)))
+params <- do.call(rbind.data.frame, params)
+params$cruise <- rep(DF$cruise, each=3)
 
 write.csv(params,"ALL-filterparams.csv", quote=F, row.names=F)
-
-
 
 
 
