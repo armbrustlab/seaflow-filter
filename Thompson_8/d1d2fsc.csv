@@ -1,2 +1,4 @@
-cruise,fsc,d1,d2
-Thompson_8,46314,23934,23156
+instrument,cruise,quantile,fsc,d1,d2
+740,Thompson_8,2.5,44896,20980,20996
+740,Thompson_8,50,45552,18960,18640
+740,Thompson_8,97.5,45904,17036,16304

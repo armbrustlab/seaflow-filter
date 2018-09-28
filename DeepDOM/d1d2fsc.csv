@@ -1,2 +1,4 @@
-cruise,fsc,d1,d2
-DeepDOM,48977,19167,19617
+instrument,cruise,quantile,fsc,d1,d2
+989,DeepDOM,2.5,48336,21424,21696
+989,DeepDOM,50,48704,19728,20416
+989,DeepDOM,97.5,49104,18176,19088
