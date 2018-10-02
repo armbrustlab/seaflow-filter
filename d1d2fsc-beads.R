@@ -189,15 +189,27 @@ write.csv(params,"ALL-filterparams.csv", quote=F, row.names=F)
 ### PLOT BEADS COORDINATES ###
 ##############################
 library(scales)
+library(plotrix)
 cols <- colorRampPalette(c("blue4","royalblue4","deepskyblue3", "seagreen3", "yellow", "orangered2","darkred"))
 DF <- read.csv("ALL-filterparams.csv")
 DF1 <- subset(DF, quantile == 50.0)
-DF2 <- subset(DF, quantile != 50.0)
+DF2 <- subset(DF, quantile == 2.5)
+DF3 <- subset(DF, quantile == 97.5)
+
+slope <- read.csv("https://raw.githubusercontent.com/armbrustlab/seaflow-virtualcore/master/1.bead_calibration/seaflow_filter_slopes.csv")
 
 png("ALL-d1d2fsc.png",width=12, height=12, unit='in', res=400)
 
-plot(DF2[,"beads.fsc.small"], DF2[,"beads.D1"], col=alpha(cols(nrow(DF2)),0.5),pch=16,cex=1.5, xlab="fsc_small", ylab="D1 & D2",las=1, main='Bead coordinates', xlim=c(0,2^16), ylim=c(0,2^16))
-  points(DF1[,"beads.fsc.small"], DF1[,"beads.D1"], bg=alpha(cols(nrow(DF1)),0.5),pch=21,cex=2)
+plot(DF1[,"beads.fsc.small"], DF1[,"beads.D1"], pch=21,cex=2.5, bg=alpha(cols(nrow(DF1)),0.5), col=1, xlab="fsc_small", ylab="D1 & D2",las=1, main='Bead coordinates', xlim=c(0,2^16), ylim=c(0,2^16))
+  segments(x0=DF2[,"beads.fsc.small"], y0=DF2[,"beads.D1"],x1=DF1[,"beads.fsc.small"], y1=DF1[,"beads.D1"],  col=alpha(cols(nrow(DF2)),0.5),pch=21,cex=2, lwd=4)
+  segments(x0=DF3[,"beads.fsc.small"], y0=DF3[,"beads.D1"],x1=DF1[,"beads.fsc.small"], y1=DF1[,"beads.D1"],  col=alpha(cols(nrow(DF3)),0.5),pch=21,cex=2, lwd=4)
+
   legend('topleft',legend=DF1$cruise,pch=21, pt.bg=alpha(cols(nrow(DF1)),0.5), bty='n', ncol=2)
+  abline(b=mean(c(slope$notch.small.D1, slope$notch.small.D2)), a=0, lty=2, col='grey',lwd=2)
+  abline(b=mean(c(slope$notch.large.D1, slope$notch.large.D2)), a=-44500, lty=2, col='grey',lwd=2)
+
+    draw.circle(44500,29000,2000, lwd=2, border='red3', col=alpha('grey',0.5))
+    abline(h=29000, lwd=2, col='red3')
+    abline(v=44500, lwd=2, col='red3')
 
 dev.off()
