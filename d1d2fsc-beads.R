@@ -92,13 +92,13 @@ for(i in 1:length(cruise.list)){
 evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursive=T, full.names=T)
 DF <- concatenate.evtopp(evt.list, n=100000, min.fsc = 25000, min.pe =25000, min.chl=25000, transform=F)
 
-# # Check EVT cytograms
-  # par(mfrow=c(2,3))
-  # plot.cytogram(DF,'D1',"D2")
-  # plot.cytogram(DF,'fsc_small',"D1")
-  # plot.cytogram(DF,'fsc_small',"D2")
-  # plot.cytogram(DF,'fsc_small',"pe")
-  # plot.cytogram(DF,'fsc_small',"chl_small")
+# Check EVT cytograms
+  par(mfrow=c(2,3))
+  plot.cytogram(DF,'D1',"D2")
+  plot.cytogram(DF,'fsc_small',"D1")
+  plot.cytogram(DF,'fsc_small',"D2")
+  plot.cytogram(DF,'fsc_small',"pe")
+  plot.cytogram(DF,'fsc_small',"chl_small")
 
 
   write.csv(DF, paste0(cruise,"/concatenated_EVT.csv"), quote=F, row.names=F)
@@ -125,7 +125,7 @@ cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern
   # check OPP filtration
   evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursive=T, full.names=T)
   evt <- readSeaflow(evt.list[length(evt.list)/2],transform=F)
-  #  evt <- readSeaflow(evt.list[1],transform=F)
+  #  evt <- readSeaflow(evt.list[35],transform=F)
 
   filter.params <- create.filter.params(inst, fsc=ip$fsc, d1=ip$d1, d2=ip$d2, width=5000)
     #filter.params$notch.small.D1 <- filter.params$notch.small.D2 <- 1000
