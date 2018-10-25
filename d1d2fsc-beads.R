@@ -1,12 +1,15 @@
 library(popcycle)
 
-create.filter.params <- function(inst, fsc, d1, d2, width=3000, slope.file=NULL) {
+create.filter.params <- function(inst, fsc, d1, d2, min.d1, min.d2, width=3000, slope.file=NULL) {
   QUANTILES <- c(2.5, 50.0, 97.5)
 
   # Rename to get correct dataframe headers
   beads.fsc.small <- as.numeric(fsc)
   beads.D1 <- as.numeric(d1)
   beads.D2 <- as.numeric(d2)
+  min.D1 <- as.numeric(min.d1)
+  min.D2 <- as.numeric(min.d2)
+
   width <- as.numeric(width)
 
   if (is.null(slope.file)) {
@@ -34,13 +37,14 @@ create.filter.params <- function(inst, fsc, d1, d2, width=3000, slope.file=NULL)
     }
 
     # Small particles
-    notch.small.D1 <- beads.D1[i]/beads.fsc.small[i]
-    notch.small.D2 <- beads.D2[i]/beads.fsc.small[i]
-    offset.small.D1 <- offset.small.D2 <- 0
+    offset.small.D1 <- min.D1
+    offset.small.D2 <- min.D2
+    notch.small.D1 <- round((beads.D1[i]-min.D1)/beads.fsc.small[i],3)
+    notch.small.D2 <- round((beads.D2[i]-min.D2)/beads.fsc.small[i],3)
 
     # Large particles
-    notch.large.D1 <- slopes[slopes$ins== inst, paste0('notch.large.D1', suffix)]
-    notch.large.D2 <- slopes[slopes$ins== inst, paste0('notch.large.D2', suffix)]
+    notch.large.D1 <- round(slopes[slopes$ins== inst, paste0('notch.large.D1', suffix)],3)
+    notch.large.D2 <- round(slopes[slopes$ins== inst, paste0('notch.large.D2', suffix)],3)
     offset.large.D1 <- round(beads.D1[i] - notch.large.D1 * beads.fsc.small[i])
     offset.large.D2 <- round(beads.D2[i] - notch.large.D2 * beads.fsc.small[i])
 
@@ -90,15 +94,15 @@ for(i in 1:length(cruise.list)){
     print(inst)
 
 evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursive=T, full.names=T)
-DF <- concatenate.evtopp(evt.list, n=100000, min.fsc = 25000, min.pe =25000, min.chl=25000, transform=F)
+DF <- concatenate.evtopp(evt.list, n=100000, min.fsc = 0, min.pe =25000, min.chl=25000, transform=F)
 
 # Check EVT cytograms
-  par(mfrow=c(2,3))
-  plot.cytogram(DF,'D1',"D2")
-  plot.cytogram(DF,'fsc_small',"D1")
-  plot.cytogram(DF,'fsc_small',"D2")
-  plot.cytogram(DF,'fsc_small',"pe")
-  plot.cytogram(DF,'fsc_small',"chl_small")
+  # par(mfrow=c(2,3))
+  # plot.cytogram(DF,'D1',"D2")
+  # plot.cytogram(DF,'fsc_small',"D1")
+  # plot.cytogram(DF,'fsc_small',"D2")
+  # plot.cytogram(DF,'fsc_small',"pe")
+  # plot.cytogram(DF,'fsc_small',"chl_small")
 
 
   write.csv(DF, paste0(cruise,"/concatenated_EVT.csv"), quote=F, row.names=F)
@@ -109,7 +113,7 @@ DF <- concatenate.evtopp(evt.list, n=100000, min.fsc = 25000, min.pe =25000, min
 ################################################################################
 cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern='.sfl',full.names = F)
 
-  i <- 17
+  i <- 3
   exp <- unlist(list(strsplit(cruise.list[i],"_")))
   if(length(exp) > 2) { cruise <- paste(exp[1],exp[2],sep="_")
   } else if(length(exp) ==2) cruise <- exp[1]
@@ -117,38 +121,38 @@ cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern
   inst <-  sub(".sfl","",exp[length(exp)])
     print(inst)
 
+  evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursive=T, full.names=T)
+
   DF <- read.csv(paste0(cruise,"/concatenated_EVT.csv"))
 
   # Gates beads to find intersections of the two slopes used for OPP filtration
   ip <- inflection.point(DF)
 
-  # check OPP filtration
-  evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursive=T, full.names=T)
-  evt <- readSeaflow(evt.list[length(evt.list)/2],transform=F)
-  #  evt <- readSeaflow(evt.list[35],transform=F)
-
-  filter.params <- create.filter.params(inst, fsc=ip$fsc, d1=ip$d1, d2=ip$d2, width=5000)
+  filter.params <- create.filter.params(inst, fsc=ip$fsc, d1=ip$d1, d2=ip$d2, min.d1 =min(DF$D1)/2, min.d2 = min(DF$D2)/2, width=5000)
     #filter.params$notch.small.D1 <- filter.params$notch.small.D2 <- 1000
+
+  # check OPP filtration
+  evt <- readSeaflow(evt.list[length(evt.list)/2],transform=F)
+  #  evt <- readSeaflow(evt.list[1],transform=F)
   plot.filter.cytogram(evt, filter.params[2,])
 
-    opp <- filter.notch(evt, filter.params[2,])$opp
+    opp <- filter.notch(evt, filter.params[1,])$opp
     plot.cytogram(opp, "fsc_small", "pe")
     b <- subset(opp, pe > 40000)
-    plot.cytogram(b, "fsc_small", "D1")
+    plot.cytogram(b, "fsc_small", "D2")
     plot.cytogram(b, "fsc_small", "D2")
 
 
   # only if satisfied with filter params
-  write.csv(data.frame(instrument=inst, cruise, ip), paste0(cruise,"/d1d2fsc.csv"),quote=F, row.names=F)
+  write.csv(data.frame(instrument=inst, cruise, filter.params), paste0(cruise,"/filterparams.csv"),quote=F, row.names=F)
 
 
 
-
-######################################################################
-### CONCATENATE d1d2fsc-filterparams.csv from ALL cruises TOGETHER ###
-######################################################################
-csv.list <- list.files(path=".", pattern="d1d2fsc.csv", recursive=T, full.names=T)
-csv.list <- csv.list[-grep("ALL-d1d2fsc", csv.list)]
+####################################
+### CREATE FILTRATION PARAMETERS ###
+####################################
+csv.list <- list.files(path=".", pattern="filterparams.csv", recursive=T, full.names=T)
+csv.list <- csv.list[-grep("ALL-filterparams.csv", csv.list)]
 
 DF <- NULL
 for(file in csv.list){
@@ -157,28 +161,7 @@ for(file in csv.list){
    DF <- rbind(DF,df)
   }
 
-write.csv(DF,"ALL-d1d2fsc.csv", quote=F, row.names=F)
-
-
-
-####################################
-### CREATE FILTRATION PARAMETERS ###
-####################################
-
-### DOWLOAD FILTER SLOPES
-slope.file <- "https://raw.githubusercontent.com/armbrustlab/seaflow-virtualcore/master/1.bead_calibration/seaflow_filter_slopes.csv"
-
-params <- NULL
-for( c in unique(DF$cruise)){
-  #c <- "SCOPE_1"
-  df <- subset(DF, cruise  == c)
-  p <- create.filter.params(inst=unique(df[,"instrument"]), fsc=df[,"fsc"], d1=df[,"d1"], d2=df[,"d2"], width=5000)
-  p$cruise <- c
-  p$instrument <- unique(df[,"instrument"])
-  params <- rbind(params, p)
-  }
-
-write.csv(params,"ALL-filterparams.csv", quote=F, row.names=F)
+write.csv(DF,"ALL-filterparams.csv", quote=F, row.names=F)
 
 
 
@@ -198,7 +181,7 @@ DF3 <- subset(DF, quantile == 97.5)
 
 slope <- read.csv("https://raw.githubusercontent.com/armbrustlab/seaflow-virtualcore/master/1.bead_calibration/seaflow_filter_slopes.csv")
 
-png("ALL-d1d2fsc.png",width=12, height=12, unit='in', res=400)
+png("ALL-filterparams.png",width=12, height=12, unit='in', res=400)
 
 plot(DF1[,"beads.fsc.small"], DF1[,"beads.D1"], pch=21,cex=2.5, bg=alpha(cols(nrow(DF1)),0.5), col=1, xlab="fsc_small", ylab="D1 & D2",las=1, main='Bead coordinates', xlim=c(0,2^16), ylim=c(0,2^16))
   segments(x0=DF2[,"beads.fsc.small"], y0=DF2[,"beads.D1"],x1=DF1[,"beads.fsc.small"], y1=DF1[,"beads.D1"],  col=alpha(cols(nrow(DF2)),0.5),pch=21,cex=2, lwd=4)

@@ -1,0 +1,4 @@
+instrument,cruise,quantile,beads.fsc.small,beads.D1,beads.D2,width,notch.small.D1,notch.small.D2,notch.large.D1,notch.large.D2,offset.small.D1,offset.small.D2,offset.large.D1,offset.large.D2
+989,MBARI_3,2.5,45536,19344,18576,5000,0.425,0.408,1.359,1.324,0,0,-42539,-41714
+989,MBARI_3,50,46736,17856,16304,5000,0.382,0.349,1.37,1.337,0,0,-46172,-46182
+989,MBARI_3,97.5,47776,16160,14400,5000,0.338,0.301,1.382,1.349,0,0,-49866,-50050
