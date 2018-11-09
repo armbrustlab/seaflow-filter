@@ -1,5 +1,51 @@
 library(popcycle)
 
+#' Plot helpful cytograms for estimating the D1, D2 and FSC coordinates of the inflection point (corresponds to location of 1µm beads).
+#'
+#' @param dataframe containing EVT data.
+#' @return D1, D2 and fsc values of presumed 1 µm beads
+#' @export
+inflection.point <- function(DF){
+  QUANTILES <- c(2.5, 50.0, 97.5)
+
+  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  par(mfrow=c(1,3),pty='s')
+
+  plot.cyt(opp, "fsc_small", "pe")
+
+    poly.beads <- getpoly(quiet=TRUE)
+    b <- subset(DF,splancs::inout(DF[,c("fsc_small", "pe")],poly=poly.beads, bound=TRUE, quiet=TRUE))
+
+  plot.cyt(b, "fsc_small", "D1")
+      polyd1 <- getpoly(quiet=TRUE)
+      opp.d1 <- subset(b,splancs::inout(b[,c("fsc_small", "D1")],poly=polyd1, bound=TRUE, quiet=TRUE))
+
+  plot.cyt(b, "fsc_small", "D2")
+      polyd2 <- getpoly(quiet=TRUE)
+      opp.d2 <- subset(b,splancs::inout(b[,c("fsc_small", "D2")],poly=polyd2, bound=TRUE, quiet=TRUE))
+  par(def.par)
+
+      FSC <- round(summary(c(opp.d1$fsc_small, opp.d2$fsc_small)))
+      D1 <- round(summary(opp.d1$D1))
+      D2 <- round(summary(opp.d2$D2))
+
+      inflection <- data.frame()
+      for (quant in QUANTILES) {
+        if (quant == 2.5) { i <- 2; j <- 5
+        } else if (quant == 50.0) { i <- j <- 3
+        } else if (quant == 97.5) { i <- 5; j <- 2
+          }
+        fsc <- as.vector(FSC[i])
+        d1 <- as.vector(D1[j])
+        d2 <- as.vector(D2[j])
+        newrow <- data.frame(quantile=quant, fsc, d1, d2, stringsAsFactors=FALSE)
+        inflection <- rbind(inflection, newrow)
+        }
+
+  return(inflection)
+}
+
+
 create.filter.params <- function(inst, fsc, d1, d2, min.d1, min.d2, width=3000, slope.file=NULL) {
   QUANTILES <- c(2.5, 50.0, 97.5)
 
@@ -148,20 +194,13 @@ cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern
 
 
 
-####################################
-### CREATE FILTRATION PARAMETERS ###
-####################################
+### Combine results
 csv.list <- list.files(path=".", pattern="filterparams.csv", recursive=T, full.names=T)
 csv.list <- csv.list[-grep("ALL-filterparams.csv", csv.list)]
-
-DF <- NULL
-for(file in csv.list){
-  print(file)
-   df <- read.csv(file)
-   DF <- rbind(DF,df)
-  }
+DF <- do.call(rbind, lapply(csv.list, function(x) read_csv(x)))
 
 write.csv(DF,"ALL-filterparams.csv", quote=F, row.names=F)
+
 
 
 
@@ -173,21 +212,31 @@ write.csv(DF,"ALL-filterparams.csv", quote=F, row.names=F)
 ##############################
 library(scales)
 library(plotrix)
-cols <- colorRampPalette(c("blue4","royalblue4","deepskyblue3", "seagreen3", "yellow", "orangered2","darkred"))
-DF <- read.csv("ALL-filterparams.csv")
+library(viridis)
+
+DF <- read_csv("ALL-filterparams.csv")
+
+# Get official cruise ID
+seaflow.meta <- gs_read(gs_title("SeaFlow\ instrument\ log", verbose = FALSE))
+id <- match(DF$cruise,seaflow.meta$cruise)
+DF$cruise <- seaflow.meta$"Cruise ID"[id]
+
+# split by quantile
 DF1 <- subset(DF, quantile == 50.0)
 DF2 <- subset(DF, quantile == 2.5)
 DF3 <- subset(DF, quantile == 97.5)
+
+
 
 slope <- read.csv("https://raw.githubusercontent.com/armbrustlab/seaflow-virtualcore/master/1.bead_calibration/seaflow_filter_slopes.csv")
 
 png("ALL-filterparams.png",width=12, height=12, unit='in', res=400)
 
-plot(DF1[,"beads.fsc.small"], DF1[,"beads.D1"], pch=21,cex=2.5, bg=alpha(cols(nrow(DF1)),0.5), col=1, xlab="fsc_small", ylab="D1 & D2",las=1, main='Bead coordinates', xlim=c(0,2^16), ylim=c(0,2^16))
-  segments(x0=DF2[,"beads.fsc.small"], y0=DF2[,"beads.D1"],x1=DF1[,"beads.fsc.small"], y1=DF1[,"beads.D1"],  col=alpha(cols(nrow(DF2)),0.5),pch=21,cex=2, lwd=4)
-  segments(x0=DF3[,"beads.fsc.small"], y0=DF3[,"beads.D1"],x1=DF1[,"beads.fsc.small"], y1=DF1[,"beads.D1"],  col=alpha(cols(nrow(DF3)),0.5),pch=21,cex=2, lwd=4)
+plot(DF1$"beads.fsc.small", DF1$"beads.D1", pch=21,cex=2.5, bg=alpha(viridis(nrow(DF1)),0.5), col=1, xlab="fsc_small", ylab="D1 & D2",las=1, main='Bead coordinates', xlim=c(0,2^16), ylim=c(0,2^16))
+  segments(x0=DF2$"beads.fsc.small", y0=DF2$"beads.D1",x1=DF1$"beads.fsc.small", y1=DF1$"beads.D1",  col=alpha(viridis(nrow(DF2)),0.5),pch=21,cex=2, lwd=4)
+  segments(x0=DF3$"beads.fsc.small", y0=DF3$"beads.D1",x1=DF1$"beads.fsc.small", y1=DF1$"beads.D1",  col=alpha(viridis(nrow(DF3)),0.5),pch=21,cex=2, lwd=4)
 
-  legend('topleft',legend=DF1$cruise,pch=21, pt.bg=alpha(cols(nrow(DF1)),0.5), bty='n', ncol=2)
+  legend('topleft',legend=DF1$cruise,pch=21, pt.bg=alpha(viridis(nrow(DF1)),0.5), bty='n', ncol=2, pt.cex=1.5)
   abline(b=mean(c(slope$notch.small.D1, slope$notch.small.D2)), a=0, lty=2, col='grey',lwd=2)
   abline(b=mean(c(slope$notch.large.D1, slope$notch.large.D2)), a=-44500, lty=2, col='grey',lwd=2)
 
