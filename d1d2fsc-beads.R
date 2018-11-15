@@ -11,17 +11,17 @@ inflection.point <- function(DF){
   def.par <- par(no.readonly = TRUE) # save default, for resetting...
   par(mfrow=c(1,3),pty='s')
 
-  plot.cyt(opp, "fsc_small", "pe")
+  plot_cyt(DF, "fsc_small", "pe")
 
-    poly.beads <- getpoly(quiet=TRUE)
+    poly.beads <- splancs::getpoly(quiet=TRUE)
     b <- subset(DF,splancs::inout(DF[,c("fsc_small", "pe")],poly=poly.beads, bound=TRUE, quiet=TRUE))
 
-  plot.cyt(b, "fsc_small", "D1")
-      polyd1 <- getpoly(quiet=TRUE)
+  plot_cyt(b, "fsc_small", "D1")
+      polyd1 <- splancs::getpoly(quiet=TRUE)
       opp.d1 <- subset(b,splancs::inout(b[,c("fsc_small", "D1")],poly=polyd1, bound=TRUE, quiet=TRUE))
 
-  plot.cyt(b, "fsc_small", "D2")
-      polyd2 <- getpoly(quiet=TRUE)
+  plot_cyt(b, "fsc_small", "D2")
+      polyd2 <- splancs::getpoly(quiet=TRUE)
       opp.d2 <- subset(b,splancs::inout(b[,c("fsc_small", "D2")],poly=polyd2, bound=TRUE, quiet=TRUE))
   par(def.par)
 
@@ -131,7 +131,7 @@ cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern
 
 for(i in 1:length(cruise.list)){
 
-#i <- 1
+#i <- 6
   exp <- unlist(list(strsplit(cruise.list[i],"_")))
   if(length(exp) > 2) { cruise <- paste(exp[1],exp[2],sep="_")
   } else if(length(exp) ==2) cruise <- exp[1]
@@ -142,13 +142,12 @@ for(i in 1:length(cruise.list)){
 evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursive=T, full.names=T)
 DF <- concatenate.evtopp(evt.list, n=100000, min.fsc = 0, min.pe =25000, min.chl=25000, transform=F)
 
-# Check EVT cytograms
-  # par(mfrow=c(2,3))
-  # plot.cytogram(DF,'D1',"D2")
-  # plot.cytogram(DF,'fsc_small',"D1")
-  # plot.cytogram(DF,'fsc_small',"D2")
-  # plot.cytogram(DF,'fsc_small',"pe")
-  # plot.cytogram(DF,'fsc_small',"chl_small")
+#Check EVT cytograms
+  plot_cytogram(DF,'D1',"D2", bins=300, transform=F)
+  plot_cytogram(DF,'fsc_small',"D1", transform=F)
+  plot_cytogram(DF,'fsc_small',"D2", transform=F)
+  plot_cytogram(DF,'fsc_small',"pe", transform=F)
+  plot_cytogram(DF,'fsc_small',"chl_small", transform=F)
 
 
   write.csv(DF, paste0(cruise,"/concatenated_EVT.csv"), quote=F, row.names=F)
@@ -159,7 +158,7 @@ DF <- concatenate.evtopp(evt.list, n=100000, min.fsc = 0, min.pe =25000, min.chl
 ################################################################################
 cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern='.sfl',full.names = F)
 
-  i <- 3
+  i <- 6
   exp <- unlist(list(strsplit(cruise.list[i],"_")))
   if(length(exp) > 2) { cruise <- paste(exp[1],exp[2],sep="_")
   } else if(length(exp) ==2) cruise <- exp[1]
@@ -167,26 +166,26 @@ cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern
   inst <-  sub(".sfl","",exp[length(exp)])
     print(inst)
 
-  evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursive=T, full.names=T)
+  evt.list <- list.files(path=paste0(path.to.data,cruise), pattern="00", recursive=T, full.names=T)
 
   DF <- read.csv(paste0(cruise,"/concatenated_EVT.csv"))
 
   # Gates beads to find intersections of the two slopes used for OPP filtration
   ip <- inflection.point(DF)
 
-  filter.params <- create.filter.params(inst, fsc=ip$fsc, d1=ip$d1, d2=ip$d2, min.d1 =min(DF$D1)/2, min.d2 = min(DF$D2)/2, width=5000)
+  filter.params <- create.filter.params(inst, fsc=ip$fsc, d1=ip$d1, d2=ip$d2, min.d1 =min(DF$D1), min.d2 = min(DF$D2), width=5000)
     #filter.params$notch.small.D1 <- filter.params$notch.small.D2 <- 1000
 
   # check OPP filtration
   evt <- readSeaflow(evt.list[length(evt.list)/2],transform=F)
   #  evt <- readSeaflow(evt.list[1],transform=F)
-  plot.filter.cytogram(evt, filter.params[2,])
+  plot_filter_cytogram(evt, filter.params[2,])
 
     opp <- filter.notch(evt, filter.params[1,])$opp
-    plot.cytogram(opp, "fsc_small", "pe")
+    plot_cyt(opp, "fsc_small", "pe")
     b <- subset(opp, pe > 40000)
-    plot.cytogram(b, "fsc_small", "D2")
-    plot.cytogram(b, "fsc_small", "D2")
+    plot_cyt(b, "fsc_small", "D2")
+    plot_cyt(b, "fsc_small", "D2")
 
 
   # only if satisfied with filter params
@@ -220,6 +219,9 @@ DF <- read_csv("ALL-filterparams.csv")
 seaflow.meta <- gs_read(gs_title("SeaFlow\ instrument\ log", verbose = FALSE))
 id <- match(DF$cruise,seaflow.meta$cruise)
 DF$cruise <- seaflow.meta$"Cruise ID"[id]
+DF$time <- as.POSIXlt(paste(1,seaflow.meta$"month"[id],seaflow.meta$"year"[id]), format="%d %B %Y")
+DF <- DF[order(DF$time),]
+
 
 # split by quantile
 DF1 <- subset(DF, quantile == 50.0)
