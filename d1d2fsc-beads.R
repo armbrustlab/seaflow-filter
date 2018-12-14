@@ -131,7 +131,7 @@ cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern
 
 for(i in 1:length(cruise.list)){
 
-#i <- 6
+#i <- 29
   exp <- unlist(list(strsplit(cruise.list[i],"_")))
   if(length(exp) > 2) { cruise <- paste(exp[1],exp[2],sep="_")
   } else if(length(exp) ==2) cruise <- exp[1]
@@ -143,7 +143,7 @@ evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursiv
 DF <- concatenate.evtopp(evt.list, n=100000, min.fsc = 0, min.pe =25000, min.chl=25000, transform=F)
 
 #Check EVT cytograms
-  plot_cytogram(DF,'D1',"D2", bins=300, transform=F)
+  plot_cytogram(DF,'D1',"D2", transform=F)
   plot_cytogram(DF,'fsc_small',"D1", transform=F)
   plot_cytogram(DF,'fsc_small',"D2", transform=F)
   plot_cytogram(DF,'fsc_small',"pe", transform=F)
@@ -158,7 +158,7 @@ DF <- concatenate.evtopp(evt.list, n=100000, min.fsc = 0, min.pe =25000, min.chl
 ################################################################################
 cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern='.sfl',full.names = F)
 
-  i <- 6
+  i <- 30
   exp <- unlist(list(strsplit(cruise.list[i],"_")))
   if(length(exp) > 2) { cruise <- paste(exp[1],exp[2],sep="_")
   } else if(length(exp) ==2) cruise <- exp[1]
@@ -173,7 +173,7 @@ cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern
   # Gates beads to find intersections of the two slopes used for OPP filtration
   ip <- inflection.point(DF)
 
-  filter.params <- create.filter.params(inst, fsc=ip$fsc, d1=ip$d1, d2=ip$d2, min.d1 =min(DF$D1), min.d2 = min(DF$D2), width=5000)
+  filter.params <- create.filter.params(inst, fsc=ip$fsc, d1=ip$d1, d2=ip$d2, min.d1 =0, min.d2 = 0, width=5000)
     #filter.params$notch.small.D1 <- filter.params$notch.small.D2 <- 1000
 
   # check OPP filtration
@@ -184,7 +184,7 @@ cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern
     opp <- filter.notch(evt, filter.params[1,])$opp
     plot_cyt(opp, "fsc_small", "pe")
     b <- subset(opp, pe > 40000)
-    plot_cyt(b, "fsc_small", "D2")
+    plot_cyt(b, "fsc_small", "D1")
     plot_cyt(b, "fsc_small", "D2")
 
 
