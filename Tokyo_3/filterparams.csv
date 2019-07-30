@@ -1,0 +1,4 @@
+instrument,cruise,quantile,beads.fsc.small,beads.D1,beads.D2,width,notch.small.D1,notch.small.D2,notch.large.D1,notch.large.D2,offset.small.D1,offset.small.D2,offset.large.D1,offset.large.D2
+751,Tokyo_3,2.5,49488,16896,17108,5000,0.341,0.346,1.904,2.034,0,0,-77329,-83551
+751,Tokyo_3,50,50208,15792,15968,5000,0.315,0.318,1.91,2.04,0,0,-80105,-86456
+751,Tokyo_3,97.5,50912,14752,14960,5000,0.29,0.294,1.915,2.047,0,0,-82744,-89257
