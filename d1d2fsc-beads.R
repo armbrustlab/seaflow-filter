@@ -7,6 +7,7 @@ library(popcycle)
 #' @export
 inflection.point <- function(DF){
   QUANTILES <- c(2.5, 50.0, 97.5)
+  slope.file <- "https://raw.githubusercontent.com/armbrustlab/seaflow-virtualcore/master/1.bead_calibration/seaflow_filter_slopes.csv"
 
   def.par <- par(no.readonly = TRUE) # save default, for resetting...
   par(mfrow=c(1,3),pty='s')
@@ -17,13 +18,24 @@ inflection.point <- function(DF){
     b <- subset(DF,splancs::inout(DF[,c("fsc_small", "pe")],poly=poly.beads, bound=TRUE, quiet=TRUE))
 
   plot_cyt(b, "fsc_small", "D1")
+    abline(b=mean(c(slope$notch.small.D1, slope$notch.small.D2)), a=0, lty=2, col='grey',lwd=2)
+    abline(b=mean(c(slope$notch.large.D1, slope$notch.large.D2)), a=-44500, lty=2, col='grey',lwd=2)
+    draw.circle(44500,29000,2000, lwd=2, border='red3', col=alpha('grey',0.5))
+    abline(h=29000, lwd=2, col='red3')
+    abline(v=44500, lwd=2, col='red3')
+
       polyd1 <- splancs::getpoly(quiet=TRUE)
       opp.d1 <- subset(b,splancs::inout(b[,c("fsc_small", "D1")],poly=polyd1, bound=TRUE, quiet=TRUE))
 
   plot_cyt(b, "fsc_small", "D2")
-      polyd2 <- splancs::getpoly(quiet=TRUE)
-      opp.d2 <- subset(b,splancs::inout(b[,c("fsc_small", "D2")],poly=polyd2, bound=TRUE, quiet=TRUE))
-  par(def.par)
+    abline(b=mean(c(slope$notch.small.D1, slope$notch.small.D2)), a=0, lty=2, col='grey',lwd=2)
+    abline(b=mean(c(slope$notch.large.D1, slope$notch.large.D2)), a=-44500, lty=2, col='grey',lwd=2)
+    draw.circle(44500,29000,2000, lwd=2, border='red3', col=alpha('grey',0.5))
+    abline(h=29000, lwd=2, col='red3')
+    abline(v=44500, lwd=2, col='red3')
+
+    polyd2 <- splancs::getpoly(quiet=TRUE)
+    opp.d2 <- subset(b,splancs::inout(b[,c("fsc_small", "D2")],poly=polyd2, bound=TRUE, quiet=TRUE))
 
       FSC <- round(summary(c(opp.d1$fsc_small, opp.d2$fsc_small)))
       D1 <- round(summary(opp.d1$D1))
@@ -41,6 +53,7 @@ inflection.point <- function(DF){
         newrow <- data.frame(quantile=quant, fsc, d1, d2, stringsAsFactors=FALSE)
         inflection <- rbind(inflection, newrow)
         }
+  par(def.par)
 
   return(inflection)
 }
@@ -128,7 +141,7 @@ path.to.data <- "~/Documents/DATA/Codes/seaflow-filter/seaflow-filter-data/"
 ### CREATE concatenated EVT file ###
 ####################################
 cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern='.sfl',full.names = F)
-i <- 61
+i <- 19
 print(cruise.list[i])
 
   exp <- unlist(list(strsplit(cruise.list[i],"_")))
@@ -157,7 +170,7 @@ DF <- concatenate.evt(evt.list,evt.dir=paste0(path.to.data,cruise), n=100000, mi
 ################################################################################
 cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern='.sfl',full.names = F)
 
-  i <- 53
+  i <- 38
   exp <- unlist(list(strsplit(cruise.list[i],"_")))
   if(length(exp) > 2) { cruise <- paste(exp[1],exp[2],sep="_")
   } else if(length(exp) ==2) cruise <- exp[1]
@@ -170,7 +183,7 @@ cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern
   DF <- read.csv(paste0(cruise,"/concatenated_EVT.csv"))
 
   # Gates beads to find intersections of the two slopes used for OPP filtration
-  ip <- inflection.point(evt)
+  ip <- inflection.point(DF)
 
   filter.params <- create.filter.params(inst, fsc=ip$fsc, d1=ip$d1, d2=ip$d2, min.d1 =0, min.d2 = 0, width=5000)
 
@@ -212,6 +225,7 @@ write.csv(DF,"ALL-filterparams.csv", quote=F, row.names=F)
 library(scales)
 library(plotrix)
 library(viridis)
+library(googlesheets)
 
 DF <- read.csv("ALL-filterparams.csv")
 
