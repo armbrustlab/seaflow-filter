@@ -19,9 +19,9 @@ inflection.point <- function(DF){
     b <- subset(DF,splancs::inout(DF[,c("fsc_small", "pe")],poly=poly.beads, bound=TRUE, quiet=TRUE))
 
   plot_cyt(b, "fsc_small", "D1")
-    abline(b=mean(c(slope$notch.small.D1, slope$notch.small.D2)), a=0, lty=2, col='grey',lwd=2)
-    abline(b=mean(c(slope$notch.large.D1, slope$notch.large.D2)), a=-44500, lty=2, col='grey',lwd=2)
-    draw.circle(44500,29000,2000, lwd=2, border='red3', col=alpha('grey',0.5))
+    #abline(b=mean(c(slope$notch.small.D1, slope$notch.small.D2)), a=0, lty=2, col='grey',lwd=2)
+    #abline(b=mean(c(slope$notch.large.D1, slope$notch.large.D2)), a=-44500, lty=2, col='grey',lwd=2)
+    #draw.circle(44500,29000,2000, lwd=2, border='red3', col=alpha('grey',0.5))
     abline(h=29000, lwd=2, col='red3')
     abline(v=44500, lwd=2, col='red3')
 
@@ -29,9 +29,9 @@ inflection.point <- function(DF){
       opp.d1 <- subset(b,splancs::inout(b[,c("fsc_small", "D1")],poly=polyd1, bound=TRUE, quiet=TRUE))
 
   plot_cyt(b, "fsc_small", "D2")
-    abline(b=mean(c(slope$notch.small.D1, slope$notch.small.D2)), a=0, lty=2, col='grey',lwd=2)
-    abline(b=mean(c(slope$notch.large.D1, slope$notch.large.D2)), a=-44500, lty=2, col='grey',lwd=2)
-    draw.circle(44500,29000,2000, lwd=2, border='red3', col=alpha('grey',0.5))
+    #abline(b=mean(c(slope$notch.small.D1, slope$notch.small.D2)), a=0, lty=2, col='grey',lwd=2)
+    #abline(b=mean(c(slope$notch.large.D1, slope$notch.large.D2)), a=-44500, lty=2, col='grey',lwd=2)
+    #draw.circle(44500,29000,2000, lwd=2, border='red3', col=alpha('grey',0.5))
     abline(h=29000, lwd=2, col='red3')
     abline(v=44500, lwd=2, col='red3')
 
