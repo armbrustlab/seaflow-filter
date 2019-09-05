@@ -8,7 +8,8 @@ library(popcycle)
 inflection.point <- function(DF){
   QUANTILES <- c(2.5, 50.0, 97.5)
   slope.file <- "https://raw.githubusercontent.com/armbrustlab/seaflow-virtualcore/master/1.bead_calibration/seaflow_filter_slopes.csv"
-
+  slope <- read.csv(slope.file)
+  
   def.par <- par(no.readonly = TRUE) # save default, for resetting...
   par(mfrow=c(1,3),pty='s')
 
