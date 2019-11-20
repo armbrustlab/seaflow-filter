@@ -1,0 +1,4 @@
+instrument,cruise,quantile,beads.fsc.small,beads.D1,beads.D2,width,notch.small.D1,notch.small.D2,notch.large.D1,notch.large.D2,offset.small.D1,offset.small.D2,offset.large.D1,offset.large.D2
+740,HOT312,2.5,47568,32288,39488,5000,0.679,0.83,1.64,1.637,0,0,-45724,-38381
+740,HOT312,50,48192,30416,37616,5000,0.631,0.781,1.635,1.632,0,0,-48378,-41033
+740,HOT312,97.5,48704,28624,36080,5000,0.588,0.741,1.63,1.627,0,0,-50764,-43161

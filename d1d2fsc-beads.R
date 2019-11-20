@@ -134,7 +134,7 @@ path.to.data <- "~/Documents/DATA/Codes/seaflow-filter/seaflow-filter-data/"
 ### CREATE concatenated EVT file ###
 ####################################
 cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern='.sfl',full.names = F)
-i <- 19
+i <- 7
 print(cruise.list[i])
 
   exp <- unlist(list(strsplit(cruise.list[i],"_")))
@@ -147,23 +147,57 @@ print(cruise.list[i])
 evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursive=T, full.names=T)
 DF <- concatenate.evt(evt.list,evt.dir=paste0(path.to.data,cruise), n=100000, min.fsc = 0, min.pe =25000, min.chl=25000, transform=F)
 
+
 #Check EVT cytograms
-  plot_cytogram(DF,'D1',"D2", transform=F)
-  plot_cytogram(DF,'fsc_small',"D1", transform=F)
-  plot_cytogram(DF,'fsc_small',"D2", transform=F)
-  plot_cytogram(DF,'fsc_small',"pe", transform=F)
-  plot_cytogram(DF,'fsc_small',"chl_small", transform=F)
+  # plot_cytogram(DF,'D1',"D2", transform=F)
+  # plot_cytogram(DF,'fsc_small',"D1", transform=F)
+  # plot_cytogram(DF,'fsc_small',"D2", transform=F)
+   plot_cytogram(DF,'fsc_small',"pe", transform=F)
+  # plot_cytogram(DF,'fsc_small',"chl_small", transform=F)
 
   system(paste('mkdir', cruise))
   write.csv(DF, paste0(cruise,"/concatenated_EVT.csv"), quote=F, row.names=F)
 
 
+
+
+
+
+
+
 ################################################################################
 ### GET D1, D2 and FSC coordinate of inflection point (where 1 µm beads are) ###
 ################################################################################
+# inst <- 751; cruise <- "SR1917"
+# ### RT cruise
+# DF <- readSeaflow(list.files(path=paste0("~/Downloads/"), pattern=".gz", recursive=T, full.names=T)[3],transform=F)
+# ip <- inflection.point(DF)
+# filter.params <- create.filter.params(inst, fsc=ip$fsc, d1=ip$d1, d2=ip$d2, min.d1 =4000, min.d2 = 3000, width=5000)
+
+
+# evt <- readSeaflow(list.files(path=paste0("~/Downloads/"), pattern=".gz", recursive=T, full.names=T)[2],transform=F)
+# plot_filter_cytogram(evt, filter.params)
+
+#   par(mfrow=c(2,2))
+#     opp <- filter.notch(evt, filter.params)
+#     plot_cyt(opp, "fsc_small", "chl_small")
+#     plot_cyt(opp, "fsc_small", "pe"); abline(v=filter.params[,'beads.fsc.small'], lty=2,col=2)
+#     b <- subset(opp, pe > 40000)
+#     plot_cyt(b, "fsc_small", "D1"); abline(h=filter.params[,'beads.D1'], lty=2,col=2)
+#     plot_cyt(b, "fsc_small", "D2"); abline(h=filter.params[,'beads.D2'], lty=2,col=2)
+
+
+# write.csv(data.frame(instrument=inst, cruise, filter.params), paste0("~/Desktop/filterparams.csv"),quote=F, row.names=F)
+
+
+
+
+### Offline cruise
 cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern='.sfl',full.names = F)
 
-  i <- 38
+  i <- 4
+  print(cruise.list[i])
+
   exp <- unlist(list(strsplit(cruise.list[i],"_")))
   if(length(exp) > 2) { cruise <- paste(exp[1],exp[2],sep="_")
   } else if(length(exp) ==2) cruise <- exp[1]
@@ -171,9 +205,10 @@ cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern
   inst <-  sub(".sfl","",exp[length(exp)])
     print(inst)
 
-  evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursive=T, full.names=T)
 
+  evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursive=T, full.names=T)
   DF <- read.csv(paste0(cruise,"/concatenated_EVT.csv"))
+
 
   # Gates beads to find intersections of the two slopes used for OPP filtration
   ip <- inflection.point(DF)
@@ -181,9 +216,9 @@ cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern
   filter.params <- create.filter.params(inst, fsc=ip$fsc, d1=ip$d1, d2=ip$d2, min.d1 =0, min.d2 = 0, width=5000)
 
   # check OPP filtration
-  evt <- readSeaflow(evt.list[length(evt.list)/2],transform=F)
-  # evt <- readSeaflow(evt.list[10],transform=F)
-  # plot_filter_cytogram(evt, filter.params[2,])
+  evt <- readSeaflow(evt.list[length(evt.list)],transform=F)
+  # evt <- readSeaflow(evt.list[1],transform=F)
+  plot_filter_cytogram(evt, filter.params)
 
     par(mfrow=c(2,2))
     opp <- filter.notch(evt, filter.params)
@@ -208,8 +243,8 @@ write.csv(DF,"ALL-filterparams.csv", quote=F, row.names=F)
 
 
 
-
-
+# DF <- get.evt.by.file(evt.dir= "~/Downloads/", file.name="2019_122/EVT_cat_KM1919.gz", transform=T)
+# plot_cytogram(DF, "fsc_small","D2")
 
 
 ##############################
