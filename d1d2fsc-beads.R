@@ -20,32 +20,32 @@ inflection.point <- function(DF){
     abline(h=29000, lwd=1, col='red3')
     abline(v=44500, lwd=1, col='red3')
 
-      polyd1 <- splancs::getpoly(quiet=TRUE)
-      opp.d1 <- subset(b,splancs::inout(b[,c("fsc_small", "D1")],poly=polyd1, bound=TRUE, quiet=TRUE))
+  polyd1 <- splancs::getpoly(quiet=TRUE)
+  opp.d1 <- subset(b,splancs::inout(b[,c("fsc_small", "D1")],poly=polyd1, bound=TRUE, quiet=TRUE))
 
   plot_cyt(b, "fsc_small", "D2")
     abline(h=29000, lwd=1, col='red3')
     abline(v=44500, lwd=1, col='red3')
 
-    polyd2 <- splancs::getpoly(quiet=TRUE)
-    opp.d2 <- subset(b,splancs::inout(b[,c("fsc_small", "D2")],poly=polyd2, bound=TRUE, quiet=TRUE))
+  polyd2 <- splancs::getpoly(quiet=TRUE)
+  opp.d2 <- subset(b,splancs::inout(b[,c("fsc_small", "D2")],poly=polyd2, bound=TRUE, quiet=TRUE))
 
-      FSC <- round(summary(c(opp.d1$fsc_small, opp.d2$fsc_small)))
-      D1 <- round(summary(opp.d1$D1))
-      D2 <- round(summary(opp.d2$D2))
+  FSC <- round(summary(c(opp.d1$fsc_small, opp.d2$fsc_small)))
+  D1 <- round(summary(opp.d1$D1))
+  D2 <- round(summary(opp.d2$D2))
 
-      inflection <- data.frame()
-      for (quant in QUANTILES) {
-        if (quant == 2.5) { i <- 2; j <- 5
+  inflection <- data.frame()
+    for (quant in QUANTILES) {
+      if (quant == 2.5) { i <- 2; j <- 5
         } else if (quant == 50.0) { i <- j <- 3
         } else if (quant == 97.5) { i <- 5; j <- 2
-          }
-        fsc <- as.vector(FSC[i])
-        d1 <- as.vector(D1[j])
-        d2 <- as.vector(D2[j])
-        newrow <- data.frame(quantile=quant, fsc, d1, d2, stringsAsFactors=FALSE)
-        inflection <- rbind(inflection, newrow)
         }
+      fsc <- as.vector(FSC[i])
+      d1 <- as.vector(D1[j])
+      d2 <- as.vector(D2[j])
+      newrow <- data.frame(quantile=quant, fsc, d1, d2, stringsAsFactors=FALSE)
+      inflection <- rbind(inflection, newrow)
+    }
   par(def.par)
 
   return(inflection)
@@ -88,30 +88,30 @@ create.filter.params <- function(inst, fsc, d1, d2, min.d1, min.d2, width=3000, 
       i <- 2
     }
 
-    # Small particles
-    offset.small.D1 <- min.D1
-    offset.small.D2 <- min.D2
-    notch.small.D1 <- round((beads.D1[i]-min.D1)/beads.fsc.small[i],3)
-    notch.small.D2 <- round((beads.D2[i]-min.D2)/beads.fsc.small[i],3)
+  # Small particles
+  offset.small.D1 <- min.D1
+  offset.small.D2 <- min.D2
+  notch.small.D1 <- round((beads.D1[i]-min.D1)/beads.fsc.small[i],3)
+  notch.small.D2 <- round((beads.D2[i]-min.D2)/beads.fsc.small[i],3)
 
-    # Large particles
-    notch.large.D1 <- round(slopes[slopes$ins== inst, paste0('notch.large.D1', suffix)],3)
-    notch.large.D2 <- round(slopes[slopes$ins== inst, paste0('notch.large.D2', suffix)],3)
-    offset.large.D1 <- round(beads.D1[i] - notch.large.D1 * beads.fsc.small[i])
-    offset.large.D2 <- round(beads.D2[i] - notch.large.D2 * beads.fsc.small[i])
+  # Large particles
+  notch.large.D1 <- round(slopes[slopes$ins== inst, paste0('notch.large.D1', suffix)],3)
+  notch.large.D2 <- round(slopes[slopes$ins== inst, paste0('notch.large.D2', suffix)],3)
+  offset.large.D1 <- round(beads.D1[i] - notch.large.D1 * beads.fsc.small[i])
+  offset.large.D2 <- round(beads.D2[i] - notch.large.D2 * beads.fsc.small[i])
 
-      newrow <- data.frame(quant, beads.fsc.small[i],
-                         beads.D1[i], beads.D2[i], width,
-                         notch.small.D1, notch.small.D2,
-                         notch.large.D1, notch.large.D2,
-                         offset.small.D1, offset.small.D2,
-                         offset.large.D1, offset.large.D2,
-                         stringsAsFactors=FALSE)
-    names(newrow) <- headers
-    filter.params <- rbind(filter.params, newrow)
+  newrow <- data.frame(quant, beads.fsc.small[i],
+                       beads.D1[i], beads.D2[i], width,
+                       notch.small.D1, notch.small.D2,
+                       notch.large.D1, notch.large.D2,
+                       offset.small.D1, offset.small.D2,
+                       offset.large.D1, offset.large.D2,
+                       stringsAsFactors=FALSE)
+  names(newrow) <- headers
+  filter.params <- rbind(filter.params, newrow)
   }
 
-  return(filter.params)
+return(filter.params)
 }
 
 
@@ -134,15 +134,15 @@ path.to.data <- "~/Documents/DATA/Codes/seaflow-filter/seaflow-filter-data/"
 ### CREATE concatenated EVT file ###
 ####################################
 cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern='.sfl',full.names = F)
-i <- 7
+i <- 29
 print(cruise.list[i])
 
-  exp <- unlist(list(strsplit(cruise.list[i],"_")))
-  if(length(exp) > 2) { cruise <- paste(exp[1],exp[2],sep="_")
-  } else if(length(exp) ==2) cruise <- exp[1]
-    print(cruise)
-  inst <-  sub(".sfl","",exp[length(exp)])
-    print(inst)
+exp <- unlist(list(strsplit(cruise.list[i],"_")))
+if(length(exp) > 2) { cruise <- paste(exp[1],exp[2],sep="_")
+} else if(length(exp) ==2) cruise <- exp[1]
+print(cruise)
+inst <-  sub(".sfl","",exp[length(exp)])
+print(inst)
 
 evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursive=T, full.names=T)
 DF <- concatenate.evt(evt.list,evt.dir=paste0(path.to.data,cruise), n=100000, min.fsc = 0, min.pe =25000, min.chl=25000, transform=F)
@@ -155,8 +155,8 @@ DF <- concatenate.evt(evt.list,evt.dir=paste0(path.to.data,cruise), n=100000, mi
    plot_cytogram(DF,'fsc_small',"pe", transform=F)
   # plot_cytogram(DF,'fsc_small',"chl_small", transform=F)
 
-  system(paste('mkdir', cruise))
-  write.csv(DF, paste0(cruise,"/concatenated_EVT.csv"), quote=F, row.names=F)
+system(paste('mkdir', cruise))
+write.csv(DF, paste0(cruise,"/concatenated_EVT.csv"), quote=F, row.names=F)
 
 
 
@@ -168,59 +168,23 @@ DF <- concatenate.evt(evt.list,evt.dir=paste0(path.to.data,cruise), n=100000, mi
 ################################################################################
 ### GET D1, D2 and FSC coordinate of inflection point (where 1 µm beads are) ###
 ################################################################################
-# inst <- 751; cruise <- "SR1917"
-# ### RT cruise
-# DF <- readSeaflow(list.files(path=paste0("~/Downloads/"), pattern=".gz", recursive=T, full.names=T)[3],transform=F)
-# ip <- inflection.point(DF)
-# filter.params <- create.filter.params(inst, fsc=ip$fsc, d1=ip$d1, d2=ip$d2, min.d1 =4000, min.d2 = 3000, width=5000)
+inst <- 751; cruise <- "SR1917"
+path <- "~/Downloads"
+evt.list <- list.files(path=path, pattern=".gz", recursive=T, full.names=T)
+evt <- readSeaflow(evt.list[1],transform=T)
+
+plot_cytogram(evt, "fsc_small", "D1")
+plot_cytogram(evt, "D1", "D2")
+plot_cytogram(evt, "fsc_small", "chl_small")
+
+### RT cruise
+ip <- inflection.point(evt)
+filter.params <- create.filter.params(inst, fsc=ip$fsc, d1=ip$d1, d2=ip$d2, min.d1 =4000, min.d2 = 3000, width=5000)
 
 
-# evt <- readSeaflow(list.files(path=paste0("~/Downloads/"), pattern=".gz", recursive=T, full.names=T)[2],transform=F)
-# plot_filter_cytogram(evt, filter.params)
+plot_filter_cytogram(evt, filter.params)
 
-#   par(mfrow=c(2,2))
-#     opp <- filter.notch(evt, filter.params)
-#     plot_cyt(opp, "fsc_small", "chl_small")
-#     plot_cyt(opp, "fsc_small", "pe"); abline(v=filter.params[,'beads.fsc.small'], lty=2,col=2)
-#     b <- subset(opp, pe > 40000)
-#     plot_cyt(b, "fsc_small", "D1"); abline(h=filter.params[,'beads.D1'], lty=2,col=2)
-#     plot_cyt(b, "fsc_small", "D2"); abline(h=filter.params[,'beads.D2'], lty=2,col=2)
-
-
-# write.csv(data.frame(instrument=inst, cruise, filter.params), paste0("~/Desktop/filterparams.csv"),quote=F, row.names=F)
-
-
-
-
-### Offline cruise
-cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern='.sfl',full.names = F)
-
-  i <- 4
-  print(cruise.list[i])
-
-  exp <- unlist(list(strsplit(cruise.list[i],"_")))
-  if(length(exp) > 2) { cruise <- paste(exp[1],exp[2],sep="_")
-  } else if(length(exp) ==2) cruise <- exp[1]
-    print(cruise)
-  inst <-  sub(".sfl","",exp[length(exp)])
-    print(inst)
-
-
-  evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursive=T, full.names=T)
-  DF <- read.csv(paste0(cruise,"/concatenated_EVT.csv"))
-
-
-  # Gates beads to find intersections of the two slopes used for OPP filtration
-  ip <- inflection.point(DF)
-
-  filter.params <- create.filter.params(inst, fsc=ip$fsc, d1=ip$d1, d2=ip$d2, min.d1 =0, min.d2 = 0, width=5000)
-
-  # check OPP filtration
-  evt <- readSeaflow(evt.list[length(evt.list)],transform=F)
-  # evt <- readSeaflow(evt.list[1],transform=F)
-  plot_filter_cytogram(evt, filter.params)
-
-    par(mfrow=c(2,2))
+  par(mfrow=c(2,2))
     opp <- filter.notch(evt, filter.params)
     plot_cyt(opp, "fsc_small", "chl_small")
     plot_cyt(opp, "fsc_small", "pe"); abline(v=filter.params[,'beads.fsc.small'], lty=2,col=2)
@@ -228,6 +192,39 @@ cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern
     plot_cyt(b, "fsc_small", "D1"); abline(h=filter.params[,'beads.D1'], lty=2,col=2)
     plot_cyt(b, "fsc_small", "D2"); abline(h=filter.params[,'beads.D2'], lty=2,col=2)
 
+
+write.csv(data.frame(instrument=inst, cruise, filter.params), paste0("~/Desktop/filterparams.csv"),quote=F, row.names=F)
+
+
+
+
+### Offline cruise
+cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern='.sfl',full.names = F)
+
+i <- 12
+print(cruise.list[i])
+
+exp <- unlist(list(strsplit(cruise.list[i],"_")))
+if(length(exp) > 2) { cruise <- paste(exp[1],exp[2],sep="_")
+} else if(length(exp) ==2) cruise <- exp[1]
+print(cruise)
+inst <-  sub(".sfl","",exp[length(exp)])
+print(inst)
+
+
+evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursive=T, full.names=T)
+DF <- read.csv(paste0(cruise,"/concatenated_EVT.csv"))
+
+
+# Gates beads to find intersections of the two slopes used for OPP filtration
+ip <- inflection.point(DF)
+
+filter.params <- create.filter.params(inst, fsc=ip$fsc, d1=ip$d1, d2=ip$d2, min.d1 =0, min.d2 = 0, width=5000)
+
+# check OPP filtration
+evt <- readSeaflow(evt.list[length(evt.list)/2],transform=F)
+# evt <- readSeaflow(evt.list[1],transform=F)
+plot_filter_cytogram(evt, filter.params)
 
 # only if satisfied with filter params
 write.csv(data.frame(instrument=inst, cruise, filter.params), paste0(cruise,"/filterparams.csv"),quote=F, row.names=F)
@@ -253,12 +250,13 @@ write.csv(DF,"ALL-filterparams.csv", quote=F, row.names=F)
 library(scales)
 library(plotrix)
 library(viridis)
-library(googlesheets)
+library(googlesheets4)
+library(tidyverse)
 
-DF <- read.csv("ALL-filterparams.csv")
+DF <- read_csv("ALL-filterparams.csv")
 
 # Get official cruise ID
-seaflow.meta <- gs_read(gs_title("SeaFlow\ instrument\ log", verbose = FALSE))
+seaflow.meta <- read_sheet("https://docs.google.com/spreadsheets/d/1Tsi7OWIZWfCQJqLDpId2aG_i-8Cp-p63PYjjvDkOtH4")
 id <- match(DF$cruise,seaflow.meta$cruise)
 DF$cruise <- seaflow.meta$"Cruise ID"[id]
 DF$time <- as.POSIXlt(paste(1,seaflow.meta$"Month"[id],seaflow.meta$"Year"[id]), format="%d %B %Y")
@@ -272,7 +270,7 @@ DF3 <- subset(DF, quantile == 97.5)
 
 
 
-slope <- read.csv("https://raw.githubusercontent.com/armbrustlab/seaflow-virtualcore/master/1.bead_calibration/seaflow_filter_slopes.csv")
+slope <- read_csv("https://raw.githubusercontent.com/armbrustlab/seaflow-virtualcore/master/1.bead_calibration/seaflow_filter_slopes.csv")
 
 png("ALL-filterparams.png",width=12, height=12, unit='in', res=400)
 
@@ -284,8 +282,8 @@ plot(DF1$"beads.fsc.small", DF1$"beads.D1", pch=21,cex=2.5, bg=alpha(viridis(nro
   abline(b=mean(c(slope$notch.small.D1, slope$notch.small.D2)), a=0, lty=2, col='grey',lwd=2)
   abline(b=mean(c(slope$notch.large.D1, slope$notch.large.D2)), a=-44500, lty=2, col='grey',lwd=2)
 
-    draw.circle(44500,29000,2000, lwd=2, border='red3', col=alpha('grey',0.5))
-    abline(h=29000, lwd=2, col='red3')
-    abline(v=44500, lwd=2, col='red3')
+draw.circle(44500,29000,2000, lwd=2, border='red3', col=alpha('grey',0.5))
+  abline(h=29000, lwd=2, col='red3')
+  abline(v=44500, lwd=2, col='red3')
 
 dev.off()
