@@ -118,8 +118,8 @@ return(filter.params)
 
 
 #path to Git repo
-setwd("~/Documents/DATA/Codes/seaflow-filter")
-
+#setwd("~/Documents/DATA/Codes/seaflow-filter")
+setwd("~/SeaFlow/Clone/seaflow-filter")
 
 ################################################
 ### Copy EVT files from DAT to local machine ###
@@ -133,7 +133,8 @@ path.to.data <- "~/Documents/DATA/Codes/seaflow-filter/seaflow-filter-data/"
 ####################################
 ### CREATE concatenated EVT file ###
 ####################################
-cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern='.sfl',full.names = F)
+#cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern='.sfl',full.names = F)
+cruise.list <- list.files("~/SeaFlow/Clone/seaflow-sfl/curated/", pattern='.sfl',full.names = F)
 i <- 29
 print(cruise.list[i])
 

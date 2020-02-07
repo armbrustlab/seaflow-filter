@@ -1,0 +1,4 @@
+instrument,cruise,quantile,beads.fsc.small,beads.D1,beads.D2,width,notch.small.D1,notch.small.D2,notch.large.D1,notch.large.D2,offset.small.D1,offset.small.D2,offset.large.D1,offset.large.D2
+751,KM1923_751,2.5,43648,34992,34976,5000,0.802,0.801,1.904,2.034,0,0,-48114,-53804
+751,KM1923_751,50,44384,33840,32832,5000,0.762,0.74,1.91,2.04,0,0,-50933,-57711
+751,KM1923_751,97.5,44992,32768,31216,5000,0.728,0.694,1.915,2.047,0,0,-53392,-60883
