@@ -132,9 +132,9 @@ return(filter.params)
 ###################
 
 ## Francois
-setwd("~/Documents/DATA/Codes/seaflow-filter") #path to Git repo
-path.to.data <- "~/Documents/DATA/Codes/seaflow-filter/seaflow-filter-data/"
-cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern='.sfl',full.names = F)
+setwd("~/Documents/Codes/seaflow-filter") #path to Git repo
+path.to.data <- "~/Documents/DATA/concatenatedEVT"
+cruise.list <- list.files("~/Documents/Codes/seaflow-sfl/curated/", pattern='.sfl',full.names = F)
 
 ## Annette
 setwd("~/SeaFlow/Clone/seaflow-filter") #path to Git repo
@@ -179,9 +179,9 @@ write.csv(DF, paste0(cruise,"/concatenated_EVT.csv"), quote=F, row.names=F)
 ######################
 ### Offline cruise ###
 ######################
-cruise.list <- list.files("~/Documents/DATA/Codes/seaflow-sfl/curated/", pattern='.sfl',full.names = F)
+cruise.list <- list.files("~/Documents/Codes/seaflow-sfl/curated/", pattern='.sfl',full.names = F)
 
-i <- 29
+i <- 28
 print(cruise.list[i])
 
 exp <- unlist(list(strsplit(cruise.list[i],"_")))
@@ -190,9 +190,14 @@ if(length(exp) > 2) { cruise <- paste(exp[1],exp[2],sep="_")
 print(cruise)
 inst <-  sub(".sfl","",exp[length(exp)])
 print(inst)
-cruise <- "KM1923_740"
-evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursive=T, full.names=T)
-DF <- read.csv(paste0(cruise,"/concatenated_EVT.csv"))
+
+# evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursive=T, full.names=T)
+# DF <- read.csv(paste0(cruise,"/concatenated_EVT.csv"))
+
+evt.parquet <- list.files(path=paste0(path.to.data), pattern=cruise, recursive=F, full.names=T)
+DF <- arrow::read_parquet(evt.parquet)
+
+
 
 
 # Gates beads to find intersections of the two slopes used for OPP filtration
@@ -201,9 +206,9 @@ ip <- inflection.point(DF)
 filter.params <- create.filter.params(inst, fsc=ip$fsc, d1=ip$d1, d2=ip$d2, min.d1 = 000, min.d2 = 000, width=5000)
 
 # check OPP filtration
-evt <- readSeaflow(evt.list[length(evt.list)/2],transform=F)
+# evt <- readSeaflow(evt.list[length(evt.list)/2],transform=F)
 # evt <- readSeaflow(evt.list[1],transform=F)
-plot_filter_cytogram(evt, filter.params)
+plot_filter_cytogram(DF, filter.params)
 
 # only if satisfied with filter params
 write.csv(data.frame(instrument=inst, cruise, filter.params), paste0(cruise,"/filterparams.csv"),quote=F, row.names=F)
@@ -235,9 +240,11 @@ DF <- read_csv("ALL-filterparams.csv")
 
 # Get official cruise ID
 seaflow.meta <- read_sheet("https://docs.google.com/spreadsheets/d/1Tsi7OWIZWfCQJqLDpId2aG_i-8Cp-p63PYjjvDkOtH4")
+
+
 id <- match(DF$cruise,seaflow.meta$cruise)
 DF$cruise <- seaflow.meta$"Cruise ID"[id]
-DF$time <- as.POSIXlt(paste(1,seaflow.meta$"Month"[id],seaflow.meta$"Year"[id]), format="%d %B %Y")
+DF$time <- as.POSIXlt(paste("01",seaflow.meta$"Month"[id],seaflow.meta$"Year"[id]), format="%d %B %Y", tz="GMT")
 DF <- DF[order(DF$time),]
 
 
