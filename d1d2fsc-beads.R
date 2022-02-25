@@ -133,7 +133,7 @@ return(filter.params)
 
 ## Francois
 setwd("~/Documents/Codes/seaflow-filter") #path to Git repo
-path.to.data <- "~/Documents/DATA/concatenatedEVT"
+path.to.data <- "~/Desktop/"
 cruise.list <- list.files("~/Documents/Codes/seaflow-sfl/curated/", pattern='.sfl',full.names = F)
 
 ## Annette
@@ -141,32 +141,30 @@ setwd("~/SeaFlow/Clone/seaflow-filter") #path to Git repo
 path.to.data <- "~/SeaFlow/Clone/seaflow-filter/seaflow-filter-data/"
 cruise.list <- list.files("~/SeaFlow/Clone/seaflow-sfl/curated/", pattern='.sfl',full.names = F)
 
+print(cruise.list)
 
 
 ####################################
 ### CREATE concatenated EVT file ###
 ####################################
-i <- 29
-print(cruise.list[i])
+i <- 88; print(cruise.list[i])
 
+# metadata
 exp <- unlist(list(strsplit(cruise.list[i],"_")))
 if(length(exp) > 2) { cruise <- paste(exp[1],exp[2],sep="_")
-} else if(length(exp) ==2) cruise <- exp[1]
+} else if(length(exp) == 2) cruise <- exp[1]
 print(cruise)
 inst <-  sub(".sfl","",exp[length(exp)])
 print(inst)
 
+# Concatenation
 evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursive=T, full.names=T)
 DF <- concatenate.evt(evt.list,evt.dir=paste0(path.to.data,cruise), n=100000, min.fsc = 0, min.pe =25000, min.chl=25000, transform=F)
 
-
 #Check EVT cytograms
-  # plot_cytogram(DF,'D1',"D2", transform=F)
-  # plot_cytogram(DF,'fsc_small',"D1", transform=F)
-  # plot_cytogram(DF,'fsc_small',"D2", transform=F)
-   plot_cytogram(DF,'fsc_small',"pe", transform=F)
-  # plot_cytogram(DF,'fsc_small',"chl_small", transform=F)
+plot_cytogram(DF,'fsc_small',"pe", transform=F)
 
+# save
 system(paste('mkdir', cruise))
 write.csv(DF, paste0(cruise,"/concatenated_EVT.csv"), quote=F, row.names=F)
 
@@ -181,8 +179,7 @@ write.csv(DF, paste0(cruise,"/concatenated_EVT.csv"), quote=F, row.names=F)
 ######################
 cruise.list <- list.files("~/Documents/Codes/seaflow-sfl/curated/", pattern='.sfl',full.names = F)
 
-i <- 28
-print(cruise.list[i])
+i <- 88; print(cruise.list[i])
 
 exp <- unlist(list(strsplit(cruise.list[i],"_")))
 if(length(exp) > 2) { cruise <- paste(exp[1],exp[2],sep="_")
@@ -191,24 +188,28 @@ print(cruise)
 inst <-  sub(".sfl","",exp[length(exp)])
 print(inst)
 
-# evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursive=T, full.names=T)
-# DF <- read.csv(paste0(cruise,"/concatenated_EVT.csv"))
+evt.list <- list.files(path=paste0(path.to.data,cruise), pattern=".gz", recursive=T, full.names=T)
+DF <- read.csv(paste0(cruise,"/concatenated_EVT.csv"))
 
-evt.parquet <- list.files(path=paste0(path.to.data), pattern=cruise, recursive=F, full.names=T)
-DF <- arrow::read_parquet(evt.parquet)
+#plot_cytogram(evt, "fsc_small", "D2", transform=F, bins=200)
 
-
-
+# evt.parquet <- list.files(path=paste0(path.to.data), pattern=cruise, recursive=F, full.names=T)
+# DF <- arrow::read_parquet(evt.parquet)
 
 # Gates beads to find intersections of the two slopes used for OPP filtration
 ip <- inflection.point(DF)
 
-filter.params <- create.filter.params(inst, fsc=ip$fsc, d1=ip$d1, d2=ip$d2, min.d1 = 000, min.d2 = 000, width=5000)
 
+# create filter parameters
+filter.params <- create.filter.params(inst, fsc=ip$fsc, d1=ip$d1, d2=ip$d2, 
+                                      min.d1 = -5000, min.d2 = -5000, width=15000)
 # check OPP filtration
-# evt <- readSeaflow(evt.list[length(evt.list)/2],transform=F)
+print(length(evt.list))
+evt <- readSeaflow(evt.list[6],transform=F)
 # evt <- readSeaflow(evt.list[1],transform=F)
-plot_filter_cytogram(DF, filter.params)
+plot_filter_cytogram(evt, filter.params)
+
+
 
 # only if satisfied with filter params
 write.csv(data.frame(instrument=inst, cruise, filter.params), paste0(cruise,"/filterparams.csv"),quote=F, row.names=F)

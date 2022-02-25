@@ -1,0 +1,4 @@
+instrument,cruise,quantile,beads.fsc.small,beads.D1,beads.D2,width,notch.small.D1,notch.small.D2,notch.large.D1,notch.large.D2,offset.small.D1,offset.small.D2,offset.large.D1,offset.large.D2
+740,SCOPE-PARAGON,2.5,51152,32516,33104,15000,0.636,0.647,1.64,1.637,0,0,-51373,-50632
+740,SCOPE-PARAGON,50,51888,30976,30832,15000,0.597,0.594,1.635,1.632,0,0,-53861,-53849
+740,SCOPE-PARAGON,97.5,52464,29616,28528,15000,0.565,0.544,1.63,1.627,0,0,-55900,-56831
