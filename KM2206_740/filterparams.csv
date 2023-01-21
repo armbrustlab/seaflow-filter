@@ -1,0 +1,4 @@
+instrument,cruise,quantile,beads.fsc.small,beads.D1,beads.D2,width,notch.small.D1,notch.small.D2,notch.large.D1,notch.large.D2,offset.small.D1,offset.small.D2,offset.large.D1,offset.large.D2
+740,KM2206_740,2.5,56992,43360,42992,15000,0.849,0.842,1.64,1.637,-5000,-5000,-50107,-50304
+740,KM2206_740,50,57696,41200,40416,15000,0.801,0.787,1.635,1.632,-5000,-5000,-53133,-53744
+740,KM2206_740,97.5,58176,39552,38096,15000,0.766,0.741,1.63,1.627,-5000,-5000,-55275,-56556
