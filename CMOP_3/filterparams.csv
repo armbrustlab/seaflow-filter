@@ -1,0 +1,4 @@
+instrument,cruise,quantile,beads.fsc.small,beads.D1,beads.D2,width,notch.small.D1,notch.small.D2,notch.large.D1,notch.large.D2,offset.small.D1,offset.small.D2,offset.large.D1,offset.large.D2
+740,CMOP_3,2.5,44467,34648,32848,15000,0.892,0.851,1.64,1.637,-5000,-5000,-38278,-39944
+740,CMOP_3,50,45920,32688,30672,15000,0.821,0.777,1.635,1.632,-5000,-5000,-42391,-44269
+740,CMOP_3,97.5,47339,30460,28624,15000,0.749,0.71,1.63,1.627,-5000,-5000,-46703,-48397
