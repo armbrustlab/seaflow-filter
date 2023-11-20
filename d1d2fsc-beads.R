@@ -26,7 +26,7 @@ print(cruise.list)
 ####################################
 ### CREATE concatenated EVT file ###
 ####################################
-i <- 93; print(cruise.list[i])
+i <- 57; print(cruise.list[i])
 
 # metadata
 exp <- unlist(list(strsplit(cruise.list[i],"_")))
