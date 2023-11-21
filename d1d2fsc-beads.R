@@ -26,7 +26,7 @@ print(cruise.list)
 ####################################
 ### CREATE concatenated EVT file ###
 ####################################
-i <- 57; print(cruise.list[i])
+i <- 4; print(cruise.list[i])
 
 # metadata
 exp <- unlist(list(strsplit(cruise.list[i],"_")))
@@ -63,7 +63,8 @@ ip <- popcycle::inflection_point(DF)
 
 # create filter parameters
 filter.params <- popcycle::create_filter_params(inst, fsc=ip$fsc, d1=ip$d1, d2=ip$d2, 
-                                      min_d1 = -5000, min_d2 = -5000, width=15000)
+                                      min_d1 = -5000, min_d2 = -5000, width=15000) 
+
 # check OPP filtration
 full_sample <- paste0(path.to.data, cruise, "/sample/", cruise, ".unfiltered-sample.parquet")
 evt <- arrow::read_parquet(full_sample)
