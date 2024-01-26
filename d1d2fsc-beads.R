@@ -117,7 +117,7 @@ plot(DF1$"beads.fsc.small", DF1$"beads.D1", pch=21,cex=2.5, bg=alpha(viridis(nro
   segments(x0=DF2$"beads.fsc.small", y0=DF2$"beads.D1",x1=DF1$"beads.fsc.small", y1=DF1$"beads.D1",  col=alpha(viridis(nrow(DF2)),0.5),pch=21,cex=2, lwd=4)
   segments(x0=DF3$"beads.fsc.small", y0=DF3$"beads.D1",x1=DF1$"beads.fsc.small", y1=DF1$"beads.D1",  col=alpha(viridis(nrow(DF3)),0.5),pch=21,cex=2, lwd=4)
 
-  legend('topleft',legend=DF1$cruise,pch=21, pt.bg=alpha(viridis(nrow(DF1)),0.5), bty='n', ncol=2, pt.cex=1.5)
+  legend('topleft',legend=DF1$cruise,pch=21, pt.bg=alpha(viridis(nrow(DF1)),0.5), bty='n', ncol=2, pt.cex=1, cex=0.95)
   abline(b=mean(c(slope$notch.small.D1, slope$notch.small.D2)), a=0, lty=2, col='grey',lwd=2)
   abline(b=mean(c(slope$notch.large.D1, slope$notch.large.D2)), a=-44500, lty=2, col='grey',lwd=2)
 
